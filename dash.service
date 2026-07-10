@@ -1,0 +1,13 @@
+[Unit]
+Description=CCMonitorDash Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/node /root/CCMonitorDash/dash.js
+EnvironmentFile=/root/CCMonitorDash/.env
+StandardError=append:/var/log/CCMonitorDash-error.log
+Type=simple
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

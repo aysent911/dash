@@ -1,0 +1,13 @@
+extends auth_layout
+block form-content
+    form(method="POST", action="/login").card
+        div
+            img(src="/images/copcart.png", alt="CopCart")
+
+        div
+            pre=info
+
+
+        div.actions
+            a.button(href='/') Continue to Login
+            a.button(href='#') Resend Link

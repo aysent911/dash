@@ -1,0 +1,44 @@
+extends layout
+
+block content
+
+    div.content#main-content
+        - const options = {year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZone: timezone, timeZoneName: 'short'};
+        - let lastEventUpdate;
+        - let lastHTDeviceUpdate;
+
+
+        each device in devices
+            - const status = device.status
+            - const deviceID = device.eui
+            - const updated =  new Intl.DateTimeFormat('en-GB', options).format(new Date(device.updated))
+            - const openDeviceDialog = `openDeviceDialog({eui: \'${device.eui}\', type: \'${device.type}\', gateway: \'${device.gateway}\'})`
+            - const deviceClass = `${device.type} ${device.project.id}`
+            - let tileColor = {'background-color': `${device.tileColor}`}   //light-grey
+            //- let statusIcon = 'fas fa-circle-exclamation';
+            if status === 'online'
+                //- tileColor = {'background-color': '#949494'}   //grey
+                //- statusIcon = 'fas fa-lock';
+
+            else if status === 'offline'
+                //- tileColor = {'background-color': '#00ed35'}   //light-green
+                //- statusIcon = 'fas fa-lock-open';
+
+            div.tile(style=tileColor, id=deviceID, class=deviceClass, onclick=openDeviceDialog) !{device.render(options)}
+
+
+        div#last-event-update(style="display: none")= lastEventUpdate
+        div#last-htdevice-update(style="display: none")= lastHTDeviceUpdate
+
+block device-dialog
+
+    script(type='text/javascript', src='https://cdn.jsdelivr.net/npm/chart.js')
+    script(type='text/javascript', src='/javascripts/dashboard.js')
+    script(type='text/javascript', src='/javascripts/report.js')
+    script(type='text/javascript', src='/javascripts/jquery-3.7.1.min.js')
+    script(type='text/javascript', src='/javascripts/GaugeMeter.js')
+    script
+        |   $(document).ready(function () {
+        |        $('.GaugeMeter').gaugeMeter();
+        |    });
+

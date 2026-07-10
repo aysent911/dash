@@ -1,0 +1,752 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', href='/stylesheets/all.min.css')
+    link(rel='stylesheet', href='/stylesheets/GaugeMeter.css')
+  body
+    div.form_container#project-dialog(style="display: none; position: fixed; z-index: 100; background-color: rgba(0, 0, 0, 0.7);")
+      form(id="project-dialog-form" style="background-color: rgba(255, 255, 255, 0.7);")
+        span
+          span#project-dialog-title(style="font-weight: bold; font-size: 18px;")
+          i.fas.fa-x.button(onclick="closeProjectDialog()", style="float: right;")
+          br
+          span#project-id(hidden="")
+        div(style="font-size: 18px; background-color: lightgray;")
+          a#about-menu(onclick="showAbout()") About
+          a#devices-menu(onclick="showDevices()") Devices
+          a#members-menu(onclick="showMembers()") Members
+        div#about-project(style="display: flex; flex-direction: column; align-items: center;")
+          div
+            label(for="projectName") Project Name
+              span(style='color: red') *
+              br
+            input(type="text", id="projectName", name="projectName", placeholder="eg. CopCart Doors")
+            br
+            .error#projectNameError=projectNameError
+
+          div
+            label(for="ownerEmail") Owner
+              span(style='color: red') *
+              br
+            input(type="text", id="ownerEmail", name="ownerEmail", placeholder="user@copcart.com", value=email)
+            br
+            .error#ownerEmailError=ownerEmailError
+
+          div(style="display: inline-flex; gap: 20px;")
+            button#create-project(type="button", name="add", style="font-size: 30px", onclick="addProject()")
+              i.fas.fa-circle-plus
+            button#edit-project(type="button", name="add", style="font-size: 30px", onclick="editProject()")
+              i.fas.fa-square-pen
+            button#delete-project(type="button", name="add", style="font-size: 30px", onclick="deleteProject()")
+              i.fas.fa-trash-can
+
+        div#project-details
+
+        div#new-device-dialog(style="display: none; flex-direction: column; align-items: center;")
+          p(style="font-weight: bold; font-size: 20px;") New Device
+          div
+            label(for="new-device-eui") Device EUI
+              span(style='color: red') *
+              br
+            input(type="text", id="new-device-eui", name="deviceEUI", placeholder="a840419f7189b847")
+            br
+            .error#new-device-eui-error=deviceEUIError
+            
+          div
+            label(for="new-device-id") Device ID
+              span(style='color: red') *
+              br
+            input(type="text", id="new-device-id", name="deviceEUI", placeholder="ID as in TTN")
+            br
+            .error#new-device-id-error=deviceIDError
+
+
+          div
+            label(for="new-device-type") Device Type
+              span(style='color: red') *
+              br
+            select(id="new-device-type", name="deviceType")
+              option(value="HTS", selected) Humidity and Temperature
+              option(value="DS") Door Sensor
+              option(value="CS") Current Sensor
+            br
+            .error#new-device-type-error=deviceTypeError
+
+          div
+            label(for="new-device-name") Device Name
+              span(style='color: red') *
+              br
+            input(type="text", id="new-device-name", name="deviceName", placeholder="eg. Door XYZ")
+            br
+            .error#new-device-name-error=deviceNameError
+
+          div
+            label(for="new-device-gateway") Gateway/Tower
+              span(style='color: red') *
+              br
+            select(id="new-device-gateway", name="gateway")
+            br
+            .error#new-device-gateway-error=gatewayError
+
+          div(style="display: inline-flex; gap: 20px;")
+            button#exit-device(type="button", name="exit-device", style="font-size: 30px", onclick="backToProject()")
+              i.fas.fa-arrow-left
+            button#create-device(type="button", name="add", style="font-size: 30px", onclick="addDevice()")
+              i.fas.fa-circle-plus
+
+        div#member-details(style="display: none; flex-direction: column; align-items: center;")
+          p(style="font-weight: bold; font-size: 20px;") Manage Member
+          div
+            label(for="memberEmail") Email
+              span(style='color: red') *
+              br
+            input(type="text", id="memberEmail", name="memberEmail", placeholder="user@copcart.com")
+            br
+            .error#memberEmailError=memberEmailError
+
+          div
+            label(for="role") Role
+              span(style='color: red') *
+              br
+            select(id="role", name="role")
+              option(value=0x35) Admin
+              option(value=0x02, selected) Member(Read Only Access)
+            br
+            .error#roleError=roleError
+
+          div(style="display: inline-flex; gap: 20px;")
+            button#exit-member(type="button", name="exit-member", style="font-size: 30px", onclick="backToProject()")
+              i.fas.fa-arrow-left
+            button#invite-member(type="button", name="add", style="font-size: 30px", onclick="inviteMember()")
+              i.fas.fa-user-plus
+            button#edit-member(type="button", name="add", style="font-size: 30px", onclick="editMember()")
+              i.fas.fa-user-pen
+            button#delete-member(type="button", name="add", style="font-size: 30px", onclick="deleteMember()")
+              i.fas.fa-trash-can
+
+    div.form_container#gateway-dialog(style="width: 100%; display: none; position: fixed; z-index:100; background-color: rgba(0, 0, 0, 0.7);")
+      form(style="background-color: rgba(255, 255, 255, 0.7);").card
+        span
+          span#gateway-dialog-title(style="font-weight: bold; font-size: 18px;")
+          i.fas.fa-x.button(onclick="closeGatewayDialog()", style="float: right;")
+          br
+          span#gateway-id(hidden="")
+        div(style="font-size: 18px; background-color: lightgray;")
+          a#about-gateway-menu(onclick="showAboutGateway()") About
+          a#gateway-devices-menu(onclick="showGatewayDevices()") Devices
+        div#about-gateway(style="display: flex; flex-direction: column; align-items: center;")
+          div
+            label(for="gatewayEUI") Gateway EUI
+              br
+            input(type="text", id="gatewayEUI", name="gatewayEUI", placeholder="a840419f7189b847", value=gatewayEUI)
+            br
+            .error#gatewayEUIError=gatewayEUIError
+
+          div
+            label(for="gatewayName") Gateway Name
+              span(style='color: red') *
+              br
+            input(type="text", id="gatewayName", name="projectName", placeholder="eg. CopCart Doors")
+            br
+            .error#gatewayNameError=projectNameError
+
+          div
+            label(for="gatewayTower") Tower
+              br
+            input(type="text", id="gatewayTower", name="gatewayTower", placeholder="TowerXX", value=tower)
+            br
+            .error#towerError=towerError
+
+          div#gateway-status
+            span Status:
+            span(id="gatewayStatus")=gatewayStatus
+
+          div#last-seen
+            label(for="gatewayLastSeen") Last Seen
+              br
+            input(type="text", id="gatewayLastSeen", name="gatewayLastSeen", value=lastSeen)
+
+          div#created-at
+            label(for="gatewayCreatedAt") Created
+            br
+            input(type="text", id="gatewayCreatedAt", name="gatewayCreatedAt", value=created)
+
+          div
+            label(for="apiKey") API Key
+              span(style='color: red') *
+              br
+            input(type="password", id="apiKey", name="apiKey", placeholder="********")
+            br
+            .error#apiKeyError=apiKeyError
+
+          div(style="display: inline-flex; gap: 20px;")
+            button#edit-gateway(type="button", name="edit-gateway", style="font-size: 30px", onclick="editGateway()")
+              i.fas.fa-square-pen
+            button#delete-gateway(type="button", name="delete-gateway", style="font-size: 30px", onclick="deleteGateway()")
+              i.fas.fa-trash-can
+
+
+
+    div.form_container#device-dialog(style="width: 100%; display: none; position: fixed; z-index: 100; background-color: rgba(0, 0, 0, 0.7);")
+      form(style="background-color: rgba(255, 255, 255, 0.7);")
+        span
+          span#device-dialog-title(style="font-weight: bold; font-size: 18px;")
+          i.fas.fa-x.button(onclick="closeDeviceDialog()", style="float: right;")
+          br
+
+        div(style="font-size: 18px; background-color: lightgray;")
+          a#about-device-menu(onclick="showAboutDevice()") About
+          a#device-logs-menu(onclick="showDeviceLogs()") Logs
+          a#device-alarms-menu(onclick="showDeviceAlarms()") Alarms
+
+        div#about-device(style="display: flex; flex-direction: column; align-items: center;")
+          div
+            span='EUI: '
+              span(style="font-weight: bold")#device-eui
+            br
+            .error#device-eui-error
+            br
+
+            span='ID: '
+              span(style="font-weight: bold")#device-id
+              br
+              .error#device-id-error
+              br
+
+            label(for="device-name")='Name: '
+            input(type="text", id="device-name", name="device-name", placeholder="Device Name")
+            br
+            .error#device-name-error
+            br
+
+            label(for="device-project")='Project: '
+            select(id="device-project", name="device-project")
+              //each project in projects
+              //  option(value=project.id)=project.name
+            br
+            br
+
+            span='Gateway: '
+              span(style="font-weight: bold")#device-gateway
+              br
+
+            span='Status: '
+              span(style="font-weight: bold")#device-status
+              br
+
+            span='Last Update: '
+              br
+              span(style="font-weight: bold")#device-last-update
+              br
+
+            span='Created: '
+              br
+              span(style="font-weight: bold")#device-created
+              br
+
+            span='Bat mV: '
+              span(style="font-weight: bold")#device-bat
+              br
+              
+            span(hidden)='Type: '
+              span(style="font-weight: bold")#device-type
+              .error#device-type-error
+              
+            span='Brand: '
+              span(style="font-weight: bold")#device-brand
+              br
+
+            span='Model: '
+              span(style="font-weight: bold")#device-model
+              br
+
+            span='Firmware Version: '
+              span(style="font-weight: bold")#device-firmware-version
+              br
+
+            span='Frequency Band: '
+              span(style="font-weight: bold")#device-frequency-band
+              br
+
+            span='Sub Band: '
+              span(style="font-weight: bold")#device-sub-band
+              br
+
+          div(style="display: inline-flex; gap: 20px;")
+            button#edit-device(type="button", name="edit-gateway", style="font-size: 30px", onclick="editDevice()")
+              i.fas.fa-square-pen
+            button#remove-device(type="button", name="delete-gateway", style="font-size: 30px", onclick="removeDevice()")
+              i.fas.fa-trash-can
+
+        div#device-alarms(style="display: none;")
+          div(style="border-bottom: 2px solid black;")
+            span(style="font-weight: normal;") Alarms
+            br
+            //if projects != null
+            //  for project in projects
+            //    - getId = 'openProjectDialog({id: \'' + project.id + '\', name: \'' + project.name+ '\', key: \'' + project.push_key + '\', owner: \'' + project.owner + '\', role: \'' + project.privilege+ '\'})'
+            //    span(onclick=getId).button=project.name
+
+            span.button(onclick="openSetAlarmDialog()")= 'Set Alarm'
+              i.fas.fa-plus(style="float: left")
+
+
+          div(style="border-bottom: 2px solid black;")
+            span(style="font-weight: normal;") Notifications
+              i.fas.fa-bell(style="float: left")
+            br
+            span.button(onclick="hideUserSettings()")= 'Clear notifications'
+              i.fas.fa-trash-can(style="float: left")
+
+        div#set-alarm-dialog(style="display: none; align-items: center;")
+          .error#device-error
+          div
+            label(for="alarm-type")='Alarm Type: '
+            select(id="alarm-type", name="alarm-type")
+              option(value='outside-range' selected=true) Value outside range
+              option(value='outside-time') Event outside allowed time
+              option(value='threshold') Value above threshold
+            br
+            .error#alarm-type-error
+
+          div#range-input-control
+            div
+              label(for="lower-limit")='Lower Limit: '
+              input(type="number", id="lower-limit", name="lower-limit", placeholder="12.5")
+              br
+              .error#lower-limit-error
+
+            div
+              label(for="upper-limit")='Upper Limit: '
+              input(type="number", id="upper-limit", name="upper-limit", placeholder="467.3")
+              br
+              .error#upper-limit-error
+
+          div#time-input-control(hidden)
+            div
+              label(for="timezone")='TimeZone: '
+              select(id="timezone" name="timezone")
+                option(value="UTC", selected=true) Universal Time Coordinated (UTC)
+                option(value="AST") Atlantic Standard Time (AST)
+                option(value="EAT") East Africa Time (EAT)
+                option(value="EST") Eastern Time (EST)
+                option(value="GMT") Greenwich Mean Time (GMT)
+                option(value="CST") North American Central Time (CST)
+              .error#timezone-error
+            div
+              label(for="start-time")='From : '
+              input(type="time", id="start-time", name="start-time")
+              br
+              .error#start-time-error
+
+            div
+              label(for="end-time")='Upto : '
+              input(type="time", id="end-time", name="end-time")
+              br
+              .error#end-time-error
+
+          div#threshold-input-control(hidden)
+            label(for="threshold")='Threshold: '
+            input(type="number", id="threshold", name="threshold", placeholder="80.9")
+            br
+            .error#threshold-error
+
+          div
+            label(for="device-alarm-description") Description:
+            textarea(id="device-alarm-description" maxlength="100" placeholder="Brief description of alarm.")
+
+          div(style="display: inline-flex; gap: 20px;")
+            button#cancel-alarm(type="button", name="cancel-alarm", style="font-size: 22px", onclick="closeSetAlarmDialog()") Cancel
+            button#set-device-alarm(type="button", name="set-alarm", style="font-size: 22px", onclick="setDeviceAlarm()") Set
+
+        //div#project-details
+
+        //div#device-details(style="display: none; flex-direction: column; align-items: center;")
+          p(style="font-weight: bold; font-size: 20px;") Manage Device
+          div
+            label(for="deviceEUI") Device EUI
+              span(style='color: red') *
+              br
+            input(type="text", id="deviceEUI", name="deviceEUI", placeholder="a840419f7189b847")
+            br
+            .error#deviceEUIError=deviceEUIError
+
+          div
+            label(for="deviceName") Device Name
+              span(style='color: red') *
+              br
+            input(type="text", id="deviceName", name="deviceName", placeholder="eg. Door XYZ")
+            br
+            .error#deviceNameError=deviceNameError
+
+          div
+            label(for="gateway") Gateway/Tower
+              span(style='color: red') *
+              br
+            select(id="gateway", name="gateway")
+            br
+            .error#gatewayError=gatewayError
+
+          div(style="display: inline-flex; gap: 20px;")
+            button#exit-device(type="button", name="exit-device", style="font-size: 30px", onclick="backToProject()")
+              i.fas.fa-arrow-left
+            button#create-device(type="button", name="add", style="font-size: 30px", onclick="addDevice()")
+              i.fas.fa-circle-plus
+            button#edit-device(type="button", name="add", style="font-size: 30px", onclick="editDevice()")
+              i.fas.fa-square-pen
+            button#delete-device(type="button", name="add", style="font-size: 30px", onclick="deleteDevice()")
+              i.fas.fa-trash-can
+
+
+    block device-dialog
+    div.form_container#new-gateway-dialog(style="width: 100%; display: none; position: fixed; z-index:100; background-color: rgba(0, 0, 0, 0.7);")
+      form(method="POST", style="background-color: rgba(255, 255, 255, 0.7);", name="new-gateway").card#new-gateway
+      
+        div(style="font-size: 20px; font-weight: bold; background-color: lightgray; text-align: center;")
+          span New Gateway
+        
+        div
+          label(for="new-gateway-EUI") Gateway EUI
+            span(style='color: red') *
+            br
+          input(type="text", id="new-gateway-EUI", name="gatewayEUI", placeholder="a840419f7189b847", value=gatewayEUI)
+          br
+          .error#new-gateway-EUI-error=gatewayEUIError
+        
+        div
+          label(for="new-gateway-ID") Gateway ID
+            span(style='color: red') *
+            br
+          input(type="text", id="new-gateway-ID", name="gatewayID", placeholder="ID as in TTN", value=gatewayID)
+          br
+          .error#new-gateway-ID-error=gatewayIDError
+        
+        div
+          label(for="new-gateway-name") Gateway Name
+            span(style='color: red') *
+            br
+          input(type="text", id="new-gateway-name", name="gatewayName", placeholder="GatewayXX", value=gatewayName)
+          br
+          .error#new-gateway-name-error=gatewayNameError
+        
+        div
+          label(for="new-gateway-tower") Tower
+            span(style='color: red') *
+            br
+          input(type="text", id="new-gateway-tower", name="tower", placeholder="TowerXX", value=tower)
+          br
+          .error#new-gateway-tower-error=towerError
+        
+        div(style="display: inline-flex; gap: 20px;")
+          button(type="button", name="add", style="font-size: 22px", onclick="addGateway()") Create
+          button(type="button", name="cancel", style="font-size: 22px", onclick="closeNewGatewayDialog()") Cancel
+
+
+    //only display sidebar if user is admin
+    //- const userType = user.type
+    - let sidebarStyle = {'display': 'none'}
+    - let deviceStyle = {'display': 'none'}
+    if userRole === 0x71
+      - sidebarStyle = {'display': 'block'}
+      - deviceStyle = {'display': 'grid', 'background-color': 'lightgray'}
+
+
+    block snapshot
+    div.form_container#snapshot-dialog(style="width: 100%; display: none; position: fixed; z-index: 100; background-color: rgba(0, 0, 0, 0.1);")
+      form(id="snapshot-dialog-form" style="background-color: rgba(255, 255, 255, 0.9);")
+        span
+          i.fas.fa-image
+          span &emsp;
+          span#snapshot-dialog-title(style="font-weight: bold; font-size: 18px;")=""
+          i.fas.fa-x.button(onclick="closeSnapshotDialog()", style="float: right; margin: 0 10px;")
+          i.fas.fa-circle-arrow-up.button(onclick="escalateEvent()", style="float: right; margin: 0 10px;")
+          br
+        img#snapshot-dialog-image(style="width: 90%; height: 90%; object-fit: contain;")
+        div
+          label(for="snapshot-narrative") Add a Narrative: &emsp;
+          textarea(id="snapshot-narrative", placeholder="Describe event here", rows="2", style="width: 80%;")
+          br
+          .error=SnapshotNarrativeError
+        div
+          label(for="escalation-point-of-contact") To: &emsp;
+          input(id="escalation-point-of-contact", placeholder="Comma separated list of emails", style="width: 85%;")
+          br
+          .error=EscalationPointofContactError
+        //    div#integrations-main(style="font-size: 18px; background-color: lightgray;")
+        //        div#integrations-menu
+        //            a.integrations-menu-item(onclick="showMQTTIntegrations()") MQTT
+        //            a.integrations-menu-item(onclick="") Grafana
+        //            a.integrations-menu-item(onclick="") TTN
+        //        div#integrations-content(style="display: flex; flex-direction: column; align-items: center;")
+        //            div
+        //                button(onclick="openNewMQTTEndpointDialog()" type="button", style="font-size: 20px")
+        //                    i.fas.fa-circle-plus
+        //                    span=" New MQTT Endpoint"
+        //
+        //            fieldset(form="integrations-dialog-form" id="new-mqtt-endpoint-dialog" style="display: none;")
+        //                legend() MQTT Endpoint
+        //                div
+        //                    label(for="new-mqtt-server-host") Server Host
+        //                        span(style='color: red') *
+        //                    input(type="text" id="new-mqtt-server-host" name="mqttServerHost" placeholder="mqtt://thethings.network:1883")
+        //                    br
+        //                    .error#mqtt-server-host-error=mqttServerHostError
+        //
+        //                div
+        //                    label(for="new-mqtt-user-name") Username
+        //                        span(style='color: red') *
+        //                    input(type="text" id="new-mqtt-user-name" name="mqttUserName" placeholder="metrics@net")
+        //                    br
+        //                    .error#mqtt-user-name-error=mqttUserNameError
+        //
+        //                div
+        //                    label(for="new-mqtt-api-key") API Key
+        //                        span(style='color: red') *
+        //                    input(type="password", id="new-mqtt-api-key", name="mqttAPIKey", placeholder="**********")
+        //                    br
+        //                    .error#mqtt-api-key-error=mqttAPIKeyError
+        //
+        //                div(style="display: inline-flex; gap: 20px;")
+        //                    button#add-MQTT-endpoint(type="button", name="add", style="font-size: 20px", onclick="addMQTTEndpoint()")
+        //                        i.fas.fa-circle-plus
+        //                        span Add
+        //                    button#close-new-mqtt-endpoint-dialog(type="button", name="add", style="font-size: 20px", onclick="closeNewMQTTEndpointDialog()")
+        //                        i.fas.fa-x
+        //                        span Close
+
+    block integrations
+    div.form_container#integrations-dialog(style="width: 100%; display: none; position: fixed; z-index: 100; background-color: rgba(0, 0, 0, 0.7);")
+      form(id="integrations-dialog-form" style="background-color: rgba(255, 255, 255, 0.7);")
+        span
+            i.fas.fa-gears
+            span#integrations-dialog-title(style="font-weight: bold; font-size: 18px;")=" Integrations"
+            i.fas.fa-x.button(onclick="closeIntegrationsDialog()", style="float: right;")
+            br
+        div#integrations-main(style="font-size: 18px; background-color: lightgray;")
+          div#integrations-menu
+            a.integrations-menu-item(onclick="showMQTTIntegrations()") MQTT
+            a.integrations-menu-item(onclick="") Grafana
+            a.integrations-menu-item(onclick="") TTN
+          div#integrations-content(style="display: flex; flex-direction: column; align-items: center;")
+              div
+                  button(onclick="openNewMQTTEndpointDialog()" type="button", style="font-size: 20px")
+                    i.fas.fa-circle-plus
+                    span=" New MQTT Endpoint"
+
+              fieldset(form="integrations-dialog-form" id="new-mqtt-endpoint-dialog" style="display: none;")
+                  legend() MQTT Endpoint
+                  div
+                      label(for="new-mqtt-server-host") Server Host
+                          span(style='color: red') *
+                      input(type="text" id="new-mqtt-server-host" name="mqttServerHost" placeholder="mqtt://thethings.network:1883")
+                      br
+                      .error#mqtt-server-host-error=mqttServerHostError
+
+                  div
+                      label(for="new-mqtt-user-name") Username
+                          span(style='color: red') *
+                      input(type="text" id="new-mqtt-user-name" name="mqttUserName" placeholder="metrics@net")
+                      br
+                      .error#mqtt-user-name-error=mqttUserNameError
+
+                  div
+                      label(for="new-mqtt-api-key") API Key
+                          span(style='color: red') *
+                      input(type="password", id="new-mqtt-api-key", name="mqttAPIKey", placeholder="**********")
+                      br
+                      .error#mqtt-api-key-error=mqttAPIKeyError
+
+                  div(style="display: inline-flex; gap: 20px;")
+                      button#add-MQTT-endpoint(type="button", name="add", style="font-size: 20px", onclick="addMQTTEndpoint()")
+                          i.fas.fa-circle-plus
+                          span Add
+                      button#close-new-mqtt-endpoint-dialog(type="button", name="add", style="font-size: 20px", onclick="closeNewMQTTEndpointDialog()")
+                          i.fas.fa-x
+                          span Close
+
+          div#project-details
+
+          div#new-device-dialog(style="display: none; flex-direction: column; align-items: center;")
+              p(style="font-weight: bold; font-size: 20px;") New Device
+              div
+                  label(for="new-device-eui") Device EUI
+                      span(style='color: red') *
+                      br
+                  input(type="text", id="new-device-eui", name="deviceEUI", placeholder="a840419f7189b847")
+                  br
+                  .error#new-device-eui-error=deviceEUIError
+
+              div
+                  label(for="new-device-id") Device ID
+                      span(style='color: red') *
+                      br
+                  input(type="text", id="new-device-id", name="deviceEUI", placeholder="ID as in TTN")
+                  br
+                  .error#new-device-id-error=deviceIDError
+
+
+              div
+                  label(for="new-device-type") Device Type
+                      span(style='color: red') *
+                      br
+                  select(id="new-device-type", name="deviceType")
+                      option(value="HTS", selected) Humidity and Temperature
+                      option(value="DS") Door Sensor
+                  br
+                  .error#new-device-type-error=deviceTypeError
+
+              div
+                  label(for="new-device-name") Device Name
+                      span(style='color: red') *
+                      br
+                  input(type="text", id="new-device-name", name="deviceName", placeholder="eg. Door XYZ")
+                  br
+                  .error#new-device-name-error=deviceNameError
+
+              div
+                  label(for="new-device-gateway") Gateway/Tower
+                      span(style='color: red') *
+                      br
+                  select(id="new-device-gateway", name="gateway")
+                  br
+                  .error#new-device-gateway-error=gatewayError
+
+              div(style="display: inline-flex; gap: 20px;")
+                  button#exit-device(type="button", name="exit-device", style="font-size: 30px", onclick="backToProject()")
+                      i.fas.fa-arrow-left
+                  button#create-device(type="button", name="add", style="font-size: 30px", onclick="addDevice()")
+                      i.fas.fa-circle-plus
+
+          div#member-details(style="display: none; flex-direction: column; align-items: center;")
+              p(style="font-weight: bold; font-size: 20px;") Manage Member
+              div
+                  label(for="memberEmail") Email
+                      span(style='color: red') *
+                      br
+                  input(type="text", id="memberEmail", name="memberEmail", placeholder="user@copcart.com")
+                  br
+                  .error#memberEmailError=memberEmailError
+
+              div
+                  label(for="role") Role
+                      span(style='color: red') *
+                      br
+                  select(id="role", name="role")
+                      option(value=0x35) Admin
+                      option(value=0x02, selected) Member(Read Only Access)
+                  br
+                  .error#roleError=roleError
+
+              div(style="display: inline-flex; gap: 20px;")
+                  button#exit-member(type="button", name="exit-member", style="font-size: 30px", onclick="backToProject()")
+                      i.fas.fa-arrow-left
+                  button#invite-member(type="button", name="add", style="font-size: 30px", onclick="inviteMember()")
+                      i.fas.fa-user-plus
+                  button#edit-member(type="button", name="add", style="font-size: 30px", onclick="editMember()")
+                      i.fas.fa-user-pen
+                  button#delete-member(type="button", name="add", style="font-size: 30px", onclick="deleteMember()")
+                      i.fas.fa-trash-can
+
+    header
+      nav.navbar
+        a.navbar_item
+          img(src="/images/copcart.png", alt="CopCart")
+        span#project-selection()='All Projects'
+        span#project-selection-id(hidden)=''
+        i(onclick="showUserMenu()").fas.fa-circle-user
+
+    main#main
+      div#user_menu(style="display: none; float: right;")
+        span='Hi '+ firstName+','
+        i(style="float: right", onclick="hideUserMenu()").fas.fa-x.button
+
+        a.user_menu_item
+          i(style="font-size: 24px;").fas.fa-circle-user
+          span(style="font-weight: bold;")= ' ' +firstName + ' ' + secondName
+          br
+          span=email
+          br
+          span(style="display: none;")#user-key=userKey
+          span(style="display: none;")#user-role=userRole
+
+        a(onclick="showUserSettings()", style="font-weight: bold;").user_menu_item
+          i(style="font-size: 24px;").fas.fa-gear
+          span=" Settings"
+        a(href='/logout', style="font-weight: bold;").user_menu_item
+          i(style="font-size: 24px;").fas.fa-arrow-right-from-bracket
+          span=" Log out"
+          //span(style="display: inline-block; width: 100%; text-align: center;")="Log out"
+
+      div#user_settings(style="display: none; float: right;")
+
+        div(style="border-bottom: 2px solid black;")
+          span(style="font-weight: bold;") Projects
+          br
+          if projects != null
+            for project in projects
+              - getId = 'openProjectDialog({id: \'' + project.id + '\', name: \'' + project.name+ '\', owner: \'' + project.owner + '\'})'
+              span(onclick=getId).user_menu_item=project.name
+
+          span.user_menu_item(onclick="openProjectDialog(\'" + email + "\')")='New Project'
+            i.fas.fa-plus(style="float: left")
+
+
+        div(style="border-bottom: 2px solid black;")
+          span(style="font-weight: bold;")
+            i.fas.fa-bell
+            span=" Notifications"
+          br
+          span.user_menu_item(onclick="hideUserSettings()")
+            i.fas.fa-trash-can
+            span=" Clear notifications"
+
+        span.user_menu_item(onclick="hideUserSettings()")= 'Exit Settings' + ' '
+          i.fas.fa-x
+
+      div.sidebar(style=sidebarStyle)
+        a(onclick="openFilterProjectsDialog(event)").sidebar_item
+          i.fas.fa-filter
+          span(id="selected-project")= " All Projects"
+          i.fas.fa-angle-right(style="float: right;")
+        a(href='/dashboard').sidebar_item
+          i.fas.fa-square-rss
+          span=" Devices"
+        a(href='/gateways').sidebar_item
+          i.fas.fa-tower-cell
+          span=" Gateways"
+        a(onclick="openIntegrationsDialog()").sidebar_item
+          i.fas.fa-gears
+          span=" Integrations"
+        a(onclick="openFilterReportsDialog(event)").sidebar_item
+            i.fas.fa-chart-line
+            span=" Reports"
+            i.fas.fa-angle-right(style="float: right;")
+
+      div#filter(style="display: none;").filter
+          a(onclick="filterProjectDevices({id: \'\', name: \'All Projects\'})").filter-item
+              span=" All Projects"
+          each project in projects
+              - const filterProjectDevices = `filterProjectDevices({id: \'${project.id}\', name: \'${project.name}\'})`
+              a(onclick=filterProjectDevices).filter-item
+                  span=" " + project.name
+
+      div#filter-reports(style="display: none;").filter
+          each project in projects
+              - const filterProjectReports = `filterProjectReports({id: \'${project.id}\', name: \'${project.name}\'})`
+              - const hrefItem = `/reports?id=${project.id}`
+              a(onclick=filterProjectReports).filter-item
+                  span=" " + project.name
+
+      block alert
+      div#alert-message(style="display: none; position: fixed; z-index: 100; background-color: red;")
+        h3(style="color: rgba(255, 255, 255, 1.0);")="ERR_CONNECTION_REFUSED. Cannot establish connection to server. Please check your internet connection!"
+
+
+      block content
+
+    footer
+      p © 2025 CopCart
+
+  script(type='text/javascript', src='/javascripts/layout.js')

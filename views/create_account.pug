@@ -1,0 +1,52 @@
+extends auth_layout
+block form-content
+    form(method='POST', action='/register_user').card
+        div
+            img(src="/images/copcart.png", alt="CopCart")
+
+        .error=info
+
+        div
+
+            label(for="firstName") First Name
+                span(style='color: red') *
+                br
+            input(type="text", id="firstName", name="firstName", placeholder="John", value=firstName)
+            br
+            .error=firstNameError
+
+        div
+
+            label(for="secondName") Second Name
+                br
+            input(type="text", id="secondName", name="secondName", placeholder="Doe", value=secondName)
+            br
+            .error=secondNameError
+
+        div
+
+            label(for="email") Email
+                span(style='color: red') *
+                br
+            input(type="text", id="email", name="email", placeholder="johndoe@gmail.com", value=email)
+            br
+            .error=emailError
+
+        div
+            label(for="password") Password
+                span(style='color: red') *
+                br
+            input(type="password", id="password", name="password", placeholder="*****", value=pass)
+            br
+            .error=passwordError
+
+        div
+            label(for="confirmPassword") Confirm Password
+                span(style='color: red') *
+                br
+            input(type="password", id="confirmPassword", name="confirmPassword", placeholder="*****", value=confirmPassword)
+            br
+            .error=confirmPasswordError
+
+        div.actions
+            input(type="submit", name="createAccount", value="Create Account", style="font-size: 20px").button

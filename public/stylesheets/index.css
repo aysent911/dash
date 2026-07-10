@@ -1,0 +1,106 @@
+body {
+  width: 99vw;
+  height: 98vh;
+  color: #333;
+  display: inline-flex; /*center child vertically*/
+  align-items: center;
+}
+#greeter {
+  height: auto;
+  width: 65%;
+  object-fit: scale-down;
+  margin: auto;
+  /*background-image: url('http://localhost:3300/greeter/image');
+  background-repeat: no-repeat;
+  background-size: cover;*/
+}
+:host {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+.error {
+  color: red;
+}
+
+.container {
+  height: 90%;
+  width: 90%;
+  display: inline-flex;
+  align-items: center;
+  margin: 0 auto; /*center horizontally*/
+  border: yellow;
+  border-width: 10px;
+}
+
+form {
+  margin: 20px 20px;
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+form > div {
+  margin-bottom: 1em;
+}
+form > div:last-child {
+  margin-bottom: 0;
+}
+
+div img {
+  /*float: left;*/
+  width: 60px;
+  height: 60px;
+}
+
+.error-wrapper {
+  margin-top: -1em;
+  margin-bottom: 1em;
+  text-align: center;
+  height: 15px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.actions a {
+  color: dodgerblue !important;
+  margin-top: 1.2em;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.card {
+  box-shadow: 2px 5px 5px 2px rgba(0, 0, 0, 0.16);
+  /*width: auto;*/
+  padding: 2em 2em 2em 2em;
+}
+
+.card:hover {
+  box-shadow: 4px 10px 10px 4px rgba(0, 0, 0, 0.2);
+}
+
+button, .button {
+  border: none;
+  display: block;
+  padding: 8px 4px;
+  vertical-align: middle;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  background-color: inherit;
+  text-align: center;
+  cursor: pointer;
+  white-space: nowrap;
+  width: 100%;
+}
+
+button, .button:hover {
+  color: #000 !important;
+  background-color: #ccc !important;
+}
+
+/*# sourceMappingURL=index.css.map */

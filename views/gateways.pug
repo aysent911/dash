@@ -1,0 +1,58 @@
+extends layout
+
+block content
+    div.content#main-content
+        each gateway in gateways
+            - const status = gateway.status
+            - const gatewayID = gateway.id
+            - const openGatewayDialog = `openGatewayDialog({id: \'${gateway.eui}\', name: \'${gateway.name}\', tower: \'${gateway.tower }\', status: \'${gateway.status}\', lastSeen: \'${gateway.last_seen}\', created: \'${gateway.created_at}\', apiKey: \'${gateway.api_key}\'})`
+            - let tileColor = {'background-color': '#ff5f5c'}   //light-red
+            - let statusIcon = 'fas fa-circle-exclamation';
+            - let status_at = new Date(gateway.status_at)
+            - let last_status = new Date(gateway.last_status_at)
+            - let last_uplink = new Date(gateway.last_uplink_at)
+            if status == 'connected'
+                - tileColor = {'background-color': '#00ed35'}   //light-green
+                - statusIcon = 'fas fa-tower-broadcast';
+
+
+            div.tile(style=tileColor, id=gatewayID, onclick=openGatewayDialog)
+                h1=gateway.name
+                    i(class=statusIcon)
+
+                p
+                    span(style="font-weight: bold;font-size: 20px;")=gateway.status
+                    br
+                    span=gateway.remote_address
+                    br
+                    br
+
+
+                    span(style="font-weight: bold;font-size: 16x;")=gateway.status + ' At:'
+                    br
+                    span=status_at
+                    br
+
+                    span(style="font-weight: bold;font-size: 16px;") Last Status At:
+                    br
+                    span=last_status
+                    br
+
+                    span(style="font-weight: bold;font-size: 16px;") Last Uplink At:
+                    br
+                    span=last_uplink
+
+        div.tile(style=deviceStyle, onclick="openNewGatewayDialog()")
+            div
+                i.fas.fa-circle-plus(style="font-size: 30px;")
+                br
+                span(style="font-size: 20px;") New Gateway
+
+    block device-dialog
+                       
+                   
+
+
+
+    script(type='text/javascript', src='/javascripts/gateways.js')
+

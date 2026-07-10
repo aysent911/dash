@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+model alarms {
+  id          Int      @default(autoincrement())
+  dev_eui     String   @db.VarChar(20)
+  start_value String?  @db.VarChar(20)
+  end_value   String?  @db.VarChar(20)
+  type        String   @db.VarChar(15)
+  enable      Boolean?
+
+  @@id([dev_eui, type])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model blacklist {
+  id    Int     @default(autoincrement())
+  token String? @db.VarChar
+
+  @@ignore
+}
+
+model devices {
+  eui                                                                    String                         @id @db.VarChar(20)
+  name                                                                   String?                        @db.VarChar(50)
+  gateway                                                                String                         @db.VarChar(20)
+  created_at                                                             DateTime                       @default(now()) @db.Timestamptz(6)
+  status                                                                 String?                        @default("CLOSE") @db.VarChar(10)
+  update_at                                                              DateTime?                      @default(now()) @db.Timestamptz(6)
+  project_id                                                             String?                        @db.Uuid
+  type                                                                   String?                        @db.VarChar(15)
+  bat_mv                                                                 Int?                           @db.SmallInt
+  firmware_version                                                       String?                        @db.VarChar(15)
+  frequency_band                                                         String?                        @db.VarChar(15)
+  sensor_model                                                           String?                        @db.VarChar(15)
+  sub_band                                                               String?                        @db.VarChar(15)
+  id                                                                     String?                        @unique(map: "unique_device_id") @db.VarChar(25)
+  brand                                                                  String?                        @db.VarChar(20)
+  gateways                                                               gateways                       @relation(fields: [gateway], references: [eui], onDelete: Cascade)
+  projects                                                               projects?                      @relation(fields: [project_id], references: [id], onDelete: Cascade, map: "project_id_fk")
+  door_devices_door_devices_euiTodevices                                 door_devices?                  @relation("door_devices_euiTodevices")
+  door_devices_door_devices_idTodevices                                  door_devices?                  @relation("door_devices_idTodevices")
+  humidity_temperature_devices_humidity_temperature_devices_idTodevices  humidity_temperature_devices[] @relation("humidity_temperature_devices_idTodevices")
+  humidity_temperature_devices_humidity_temperature_devices_euiTodevices humidity_temperature_devices?  @relation("humidity_temperature_devices_euiTodevices")
+  logs                                                                   logs[]
+  power_devices_power_devices_euiTodevices                               power_devices?                 @relation("power_devices_euiTodevices")
+  power_devices_power_devices_idTodevices                                power_devices?                 @relation("power_devices_idTodevices")
+}
+
+model door_devices {
+  eui                               String    @id @db.VarChar(20)
+  id                                String?   @unique @db.VarChar(25)
+  alarm                             Boolean?  @default(false)
+  open_status                       String?   @db.VarChar(10)
+  open_times                        Int?      @db.SmallInt
+  last_open_duration                Int?
+  update_at                         DateTime? @db.Timestamptz(6)
+  devices_door_devices_euiTodevices devices   @relation("door_devices_euiTodevices", fields: [eui], references: [eui], onDelete: Cascade)
+  devices_door_devices_idTodevices  devices?  @relation("door_devices_idTodevices", fields: [id], references: [id], onDelete: Cascade)
+}
+
+model gateways {
+  eui            String    @id @db.VarChar(20)
+  id             String    @unique(map: "unique_gateway_id") @db.VarChar(50)
+  name           String    @db.VarChar(20)
+  status         String?   @db.VarChar(20)
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  status_at      String?   @db.VarChar(30)
+  last_status_at String?   @db.VarChar(30)
+  last_uplink_at String?   @db.VarChar(30)
+  remote_address String?   @db.VarChar(32)
+  tower          String?   @db.VarChar(20)
+  devices        devices[]
+  logs           logs[]
+}
+
+model humidity_temperature_devices {
+  eui                                               String    @id(map: "temperatures_pkey") @db.VarChar(20)
+  humidity                                          Float?    @db.Real
+  temperature_c                                     Float?    @db.Real
+  temperature_ext                                   Float?    @db.Real
+  update_at                                         DateTime? @db.Timestamptz(6)
+  id                                                String?   @db.VarChar(20)
+  devices_humidity_temperature_devices_idTodevices  devices?  @relation("humidity_temperature_devices_idTodevices", fields: [id], references: [id], onDelete: Cascade)
+  devices_humidity_temperature_devices_euiTodevices devices   @relation("humidity_temperature_devices_euiTodevices", fields: [eui], references: [eui], onDelete: NoAction, onUpdate: NoAction, map: "temperatures_dev_eui_fkey")
+}
+
+model logs {
+  id            Int      @id @default(autoincrement())
+  created_at    DateTime @db.Timestamptz(6)
+  dev_eui       String   @db.VarChar(20)
+  gate_eui      String   @db.VarChar(20)
+  trigger_event String   @db.VarChar(10)
+  devices       devices  @relation(fields: [dev_eui], references: [eui], onDelete: Cascade)
+  gateways      gateways @relation(fields: [gate_eui], references: [eui], onDelete: Cascade)
+}
+
+model mqtt_endpoints {
+  id        Int     @id @default(autoincrement())
+  host      String  @db.VarChar(100)
+  user_name String  @db.VarChar(50)
+  key       String? @db.VarChar(100)
+}
+
+model power_devices {
+  eui                                String    @id @db.VarChar(20)
+  id                                 String?   @unique @db.VarChar(25)
+  current1_a                         Float?    @db.Real
+  current2_a                         Float?    @db.Real
+  current3_a                         Float?    @db.Real
+  current4_a                         Float?    @db.Real
+  update_at                          DateTime? @db.Timestamptz(6)
+  consumption                        Float?    @db.Real
+  exti_level                         String?   @db.VarChar(10)
+  exti_trigger                       Boolean?  @default(false)
+  devices_power_devices_euiTodevices devices   @relation("power_devices_euiTodevices", fields: [eui], references: [eui], onDelete: Cascade)
+  devices_power_devices_idTodevices  devices?  @relation("power_devices_idTodevices", fields: [id], references: [id], onDelete: Cascade)
+}
+
+model project_members {
+  project_id String   @db.Uuid
+  user_email String   @db.VarChar(63)
+  privilege  Int      @db.SmallInt
+  active     Boolean? @default(false)
+  projects   projects @relation(fields: [project_id], references: [id], onDelete: Cascade, map: "project_users_project_id_fkey")
+  users      users    @relation(fields: [user_email], references: [email], onDelete: Cascade, map: "project_users_user_email_fkey")
+
+  @@id([project_id, user_email], map: "project_users_pkey")
+}
+
+model projects {
+  id               String            @id(map: "organizations_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String?           @unique(map: "name_unique") @db.VarChar(50)
+  push_key         String?           @db.VarChar(63)
+  owner            String            @db.VarChar(63)
+  org_id           Int?              @db.SmallInt
+  mqtt_server_host String?           @db.VarChar(100)
+  mqtt_user_name   String?           @db.VarChar(50)
+  mqtt_api_key     String?           @db.VarChar(100)
+  devices          devices[]
+  camera_devices   camera_devices[]
+  project_members  project_members[]
+  settings         settings[]
+}
+
+model users {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email           String            @unique @db.VarChar(63)
+  user_key        String?           @db.VarChar(63)
+  passhash        String?           @db.VarChar(40)
+  verified        Boolean?          @default(false)
+  token           String?           @db.VarChar(40)
+  first_name      String?           @db.VarChar(20)
+  second_name     String?           @db.VarChar(20)
+  role            Int?              @default(2) @db.SmallInt
+  project_members project_members[]
+  notifications   notifications[]
+}
+
+model settings{
+  id              String            @id @default(dbgenerated("gen_random_uuid()"))  @db.Uuid
+  project_id      String            @db.Uuid
+  parameter       String            @db.VarChar(40)
+  value           String            @db.VarChar(40)
+  project         projects          @relation(fields: [project_id], references: [id])
+}
+
+model camera_triggers{
+  id              Int               @id @default(autoincrement())
+  key             String            @db.VarChar(30)
+  name            String            @db.VarChar(63)
+  events          camera_events[]
+}
+
+model camera_devices {
+  id              String            @id @db.VarChar(15)                                 //MAC address
+  alias           String?           @unique @db.VarChar(26)
+  name            String            @db.VarChar(63)
+  project_id      String            @db.Uuid
+  project         projects          @relation(fields: [project_id], references: [id])
+  events          camera_events[]
+}
+
+model camera_events{
+  id              Int               @id @default(autoincrement())
+  created_at      DateTime          @db.Timestamptz(6)
+  trigger_id      Int               @db.SmallInt
+  device_id       String            @db.VarChar(15)
+  local_link      String?           @db.VarChar(100)
+  detail          String            @db.VarChar(200)
+  trigger         camera_triggers   @relation(fields: [trigger_id], references: [id])
+  device          camera_devices    @relation(fields: [device_id], references: [id])
+}
+
+model notifications {
+  id              Int               @id @default(autoincrement())
+  created_at      DateTime          @db.Timestamptz()
+  from            String            @db.Uuid
+  to              String            @db.Uuid
+  message         String            @db.VarChar(400)
+  ack             Boolean?          @default(false)
+  user            users             @relation(fields: [to], references: [id])
+}
+
+model snapshots {
+  id              Int               @id @default(autoincrement())
+  link            String?           @unique @db.VarChar(100)
+  mime_type       String?
+  created_at      DateTime          @db.Timestamptz()
+  image           Bytes
+}
