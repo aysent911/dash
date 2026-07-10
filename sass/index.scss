@@ -1,0 +1,80 @@
+$primary-color: #333;
+body {
+  color: $primary-color;
+}
+:host {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+.error {
+  color: red;
+}
+.form_container{        /*centre form vertically*/
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+form {
+  margin : 0 auto;    /*centre horizontally*/
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+form >div {
+  margin-bottom: 1em;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+div img {
+  /*float: left;*/
+  width: 60px;
+  height: 60px;
+}
+
+.error-wrapper {
+  margin-top: -1em;
+  margin-bottom: 1em;
+  text-align: center;
+  height: 15px;
+}
+
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  a {
+    color: dodgerblue!important;
+    margin-top: 1.2em;
+    font-size: 14px;
+    text-decoration: none;
+  }
+}
+.card{
+  box-shadow:2px 5px 5px 2px rgba(0,0,0,0.16);
+  width: auto;
+  padding: 2em 2em 2em 2em;
+
+}
+.card:hover{
+  box-shadow:4px 10px 10px 4px rgba(0,0,0,0.2);
+}
+button, .button{
+  border:none;
+  display:block;
+  padding:8px 4px;
+  vertical-align:middle;
+  overflow:hidden;text-decoration:none;
+  color:inherit;background-color:inherit;
+  text-align: center;
+  cursor:pointer;white-space:nowrap;
+  width: 100%;
+}
+button, .button:hover{
+  color:#000!important;
+  background-color:#ccc!important
+}

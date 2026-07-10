@@ -1,0 +1,40 @@
+.GaugeMeter {
+    position: Relative;
+    color: red;
+    text-align: Center;
+    overflow: Hidden;
+    cursor: Default;
+}
+
+.GaugeMeter SPAN,
+.GaugeMeter B {
+    margin: 0 23%;
+    width: 54%;
+    position: Absolute;
+    text-align: Center;
+    display: Inline-Block;
+    color: RGBa(0, 0, 0, 0.8);
+    font-weight: 100;
+    font-family: 'Open Sans', Arial;
+    overflow: Hidden;
+    white-space: NoWrap;
+    text-overflow: Ellipsis;
+}
+.GaugeMeter[data-style='Semi'] B {
+    margin: 0 10%;
+    width: 80%;
+}
+
+.GaugeMeter S,
+.GaugeMeter U {
+    text-decoration: None;
+    font-size: 0.5em;
+    opacity: 0.5;
+}
+
+.GaugeMeter B {
+    color: Black;
+    font-weight: 300;
+    font-size: 0.5em;
+    opacity: 0.8;
+}
