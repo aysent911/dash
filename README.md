@@ -1,6 +1,6 @@
 #Dash
-A customizable dashboard for monitoring applications
-##Applications
+###A customizable dashboard for monitoring applications
+##Applications  
 1. Charts
    2. Business Intelligence
    3. IoT
