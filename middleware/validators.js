@@ -3,7 +3,6 @@ import {body} from 'express-validator';
 const createAccountValidator = [
     body('firstName', '* required').notEmpty(),
     body('firstName', 'Must be alphanumeric').isAlphanumeric(),
-    body('secondName').optional(),
     body('email', '* required').notEmpty(),
     body('email', 'Invalid email').isEmail(),
     body('password', '* required').notEmpty(),

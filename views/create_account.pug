@@ -1,52 +1,41 @@
 extends auth_layout
-block form-content
-    form(method='POST', action='/register_user').card
-        div
-            img(src="/images/copcart.png", alt="CopCart")
+block form_content
 
-        .error=info
+    .error=info
 
-        div
+    div
 
-            label(for="firstName") First Name
-                span(style='color: red') *
-                br
-            input(type="text", id="firstName", name="firstName", placeholder="John", value=firstName)
+        label(for="firstName") Preferred Name
+            span(style='color: red') *
             br
-            .error=firstNameError
+        input(type="text", id="firstName", name="firstName", placeholder="Jane", value=firstName)
+        br
+        .error=firstNameError
 
-        div
+    div
 
-            label(for="secondName") Second Name
-                br
-            input(type="text", id="secondName", name="secondName", placeholder="Doe", value=secondName)
+        label(for="email") Email
+            span(style='color: red') *
             br
-            .error=secondNameError
+        input(type="text", id="email", name="email", placeholder="janedoe@org.com", value=email)
+        br
+        .error=emailError
 
-        div
-
-            label(for="email") Email
-                span(style='color: red') *
-                br
-            input(type="text", id="email", name="email", placeholder="johndoe@gmail.com", value=email)
+    div
+        label(for="password") Password
+            span(style='color: red') *
             br
-            .error=emailError
+        input(type="password", id="password", name="password", placeholder="*****", value=pass)
+        br
+        .error=passwordError
 
-        div
-            label(for="password") Password
-                span(style='color: red') *
-                br
-            input(type="password", id="password", name="password", placeholder="*****", value=pass)
+    div
+        label(for="confirmPassword") Confirm Password
+            span(style='color: red') *
             br
-            .error=passwordError
+        input(type="password", id="confirmPassword", name="confirmPassword", placeholder="*****", value=confirmPassword)
+        br
+        .error=confirmPasswordError
 
-        div
-            label(for="confirmPassword") Confirm Password
-                span(style='color: red') *
-                br
-            input(type="password", id="confirmPassword", name="confirmPassword", placeholder="*****", value=confirmPassword)
-            br
-            .error=confirmPasswordError
-
-        div.actions
-            input(type="submit", name="createAccount", value="Create Account", style="font-size: 20px").button
+    div.actions
+        input(type="submit", name="createAccount", value="Create Account", style="font-size: 20px").button

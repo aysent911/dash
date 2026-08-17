@@ -19,7 +19,7 @@ import verifyRouter from './routes/verify.js';
 import addGatewayRouter from './routes/manage_gateways.js';
 import resetInfoRouter from './routes/reset_info.js';
 import passwordResetRouter from './routes/password_reset.js';
-import {verifySession} from './middleware/auth.js';
+import {verifySession, login, send2FACode, verify2FACode} from './middleware/auth.js';
 import {projectValidator, gatewayValidator, deviceValidator, memberValidator,
     emailValidator, alarmValidator, MQTTEndpointValidator, createAccountValidator,
     loginValidator} from './middleware/validators.js';
@@ -31,7 +31,7 @@ import {addProject, editProject, getProjectDevices, getProjectMembers, getDevice
 import {addGateway} from './controllers/manage/gateway.js';
 import {addMQTTEndPoint} from './controllers/manage/integrations.js';
 import {} from './services/miscellaneous.js';
-import {login, logout, registerUser, forgotPassword, updateUserAccount} from './controllers/auth.js';
+import {logout, forgotPassword, updateUserAccount} from './controllers/auth.js';
 import {MQTT_SERVER_HOST, MQTT_LHT_METRICS_USERNAME, MQTT_LHT_METRICS_PASSWORD,
    MQTT_CC_DOOR_USERNAME, MQTT_CC_DOOR_PASSWORD, MQTT_VIP_INDOOR_STORAGE_METRICS_USERNAME,
     MQTT_VIP_INDOOR_STORAGE_METRICS_PASSWORD} from './config/index.js';
@@ -75,15 +75,29 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/verify', verifyRouter);
+app.use('/verify', verify2FACode);
+//app.use('/verified', verifyEmail);
 //app.use('/:search', checkCache);
 app.use('/create_account', createAccountRouter);
-app.post('/register_user', createAccountValidator, registerUser);
+app.post('/register_user', createAccountValidator, send2FACode, (req, res) => {
+    res.render('verify', {
+        info: `Verification code has been sent to ${req.body.email}\n` +
+        `If not received within 2 minutes, click on Resend Link`,
+        targetUrl: '/verify',
+        tenant: req.body.email,
+    });
+});
 app.post('/forgot_password', emailValidator, forgotPassword);
 app.use('/reset_info', resetInfoRouter);
 app.use('/password_reset', passwordResetRouter);
 app.post('/update_account', createAccountValidator, updateUserAccount);
-app.post('/login', loginValidator, login);
+app.post('/login', loginValidator, login, send2FACode, (req, res) => {
+    res.setHeader('Cache-Control', 'private, max-age=0, no-cache, no-store');
+    res.render('verify', {
+        targetUrl: '/verify',
+        tenant: req.body.email,
+  });
+});
 app.use('/dashboard', verifySession, getProjects, getUserDevices);
 app.use('/dashboard', dashboardRouter);
 app.use('/dashboard/reports/escalate', verifySession, getEventDetail, escalateEvent);

@@ -1,34 +1,31 @@
 extends auth_layout
-block form-content
-  form(method="POST", action="/login").card
-    div
-      img(src="/images/copcart.png", alt="CopCart")
+block form_content
+    
+  p Login to dashboard
 
-    p Login to dashboard
+  span.error=error
 
-    span.error=error
+  div
 
-    div
-
-      label(for="email") User email
-        span(style='color: red') *
-        br
-      input(type="text", id="email", name="email", placeholder="user@copcart.com", value=email)
+    label(for="email") User email
+      span(style='color: red') *
       br
-      .error#emailError=emailError
+    input(type="text", id="email", name="email", placeholder="janedoe@org.com", value=email)
+    br
+    .error#emailError=emailError
 
-    div
-      label(for="password") Password
-        span(style='color: red') *
-        br
-      input(type="password", id="password", name="password", placeholder="*****", value=pass)
+  div
+    label(for="password") Password
+      span(style='color: red') *
       br
-      .error=passwordError
+    input(type="password", id="password", name="password", placeholder="*****", value=pass)
+    br
+    .error=passwordError
 
-      input(type="text", id="timezone", name="timezone", hidden="hidden")
+    input(type="text", id="timezone", name="timezone", hidden="hidden")
 
-    div.actions
-      input(type="submit", name="login", value="Login", style="font-size: 20px").button
-      a.button(href='/create_account') Create Account
-      a.button(onclick="forgotPassword()") Forgot Password?
+  div.actions
+    input(type="submit", name="login", value="Login", style="font-size: 20px").button
+    a.button(href='/create_account') Create Account
+    a.button(onclick="forgotPassword()") Forgot Password?
 

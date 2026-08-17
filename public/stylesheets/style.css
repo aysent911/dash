@@ -10,6 +10,11 @@ body{
   width: 99vw;
   height: 98vh;
 }
+
+h1, h3, h3, h4, h5, h6 {
+    font-family: "Manrope";
+}
+
 .error {
   color: red;
 }
