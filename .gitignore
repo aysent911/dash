@@ -142,4 +142,5 @@ vite.config.ts.timestamp-*
 .idea*
 ca.crt
 ca-certificate.crt
+.todo.md
 

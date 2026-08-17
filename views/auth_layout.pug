@@ -6,6 +6,11 @@ html
 
     body
         div.container
-            block form-content
+            form(method="POST", action=targetUrl).card
+                div#logo
+                    h3 Dash
+                    p Powered by 
+                        span bearinfinity
+                block form_content
 
-            img#greeter(src="http://localhost:3300/greeter/image")
+            //img#greeter(src="http://localhost:3300/greeter/image")
